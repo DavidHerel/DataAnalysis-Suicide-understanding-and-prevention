@@ -31,10 +31,10 @@ At **first**, we look on interesting variables and their behavior.
 
 Let's start with most interesting one: 
 
+#### Generation
+
 #![Generation](ok_boomer.jpg)
 
-
-#### Generation
 ```{r message = FALSE, warning = FALSE} 
 #load data in to "data"
 load(file="suicide.RData")
@@ -46,7 +46,7 @@ We can see that generation **G.I.** and **Z** are not so big as others. My expla
 
 #### Sex
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 barplot(table(data$sex), col=c("pink", "blue"))
 ```
 
@@ -54,7 +54,7 @@ We can see we **same number** of males in females in dataset.
 
 #### Age
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 barplot(table(data$age), col="blue")
 ```
 
@@ -62,7 +62,7 @@ This is really **weird** for me. I would not divide data in these categories. I 
 
 #### Continent
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 barplot(table(data$continent), col="blue")
 ```
 
@@ -84,23 +84,23 @@ library(dplyr)
 library(ggplot2)
 
 
-data %>%
-  #sort it from the lowest year to the highest
-  group_by(year) %>%
-  # ?? summ
-  summarize(population = sum(population), 
-            suicides = sum(suicides_no), 
-            suicides_per_100k = (suicides / population) * 100000) %>%
-  #put name on axes
-  ggplot(aes(x = year, y = suicides_per_100k)) + 
-  geom_line(col = "deepskyblue3", size = 1) + 
-  geom_point(col = "deepskyblue3", size = 2) + 
-  labs(title = "Global Suicides (per 100k)",
-       subtitle = "Trend over time, 1985 - 2015.",
-       x = "Year", 
-       y = "Suicides per 100k") + 
-  scale_x_continuous(breaks = seq(1985, 2015, 2)) + 
-  scale_y_continuous(breaks = seq(10, 20))
+data_plot_suicide = data %>% # using suicide_data
+  group_by(year) %>% # group all the data from the same year
+  summarize(
+            suicides_100k = (sum(suicides_no) / sum(population)) * 100000)
+
+ggplot(data = data_plot_suicide, 
+                      aes(x = year, y = suicides_100k)) +
+  # points to each peak
+  geom_point(col = 'blue') +
+  
+  # line of points
+  geom_line(col = 'blue') +
+  
+  #change labels
+  ylab('Suicides global per 100k') +
+  xlab('Year')
+  
 
 ```
 
@@ -116,10 +116,104 @@ To have a **correct** prediction we would have to develop model which can predic
 [^2]: Reger MA, Stanley IH, Joiner TE. Suicide mortality and coronavirus disease 2019: a perfect storm?JAMA Psychiatry2020. [Epub ahead of print.] doi:10.1001/jamapsychiatry.2020.1060 pmid:32275300
 
 #### Man vs female
-This statistics should be pretty accurate because there is equal number man and woman in dataset.
+This statistics should be pretty **accurate** because there is equal number man and woman in dataset.
+
+```{r message = FALSE, warning = FALSE}
+library("pdp")
+
+#same as in previous for global age
+suicide_data_sex = data %>%
+  group_by(year, sex) %>%
+  summarize(suicide_100k = (sum(suicides_no) / sum(population)) * 100000)
+  
+  
+ggplot(data = suicide_data_sex, 
+       aes(x = year, y = suicide_100k, col = factor(sex))) + 
+  facet_grid(sex ~ ., scales = "free_y") + 
+  
+  geom_line() + 
+  geom_point() +
+  
+  #change labels
+  xlab('Year') +
+  ylab('Suicides global per 100k')+
+  
+  #change legend -> from factor(sex) to sex
+  labs(color = 'Sex')
+
+
+
+```
+
+We see that **males** have a lot more suicides than **females**. There is not a single year, when females 'wins'. We could maybe use classical barplot for overall result, but I was more interested in **timeline** and how or if it changed.
 
 #### Continents
-There we will not get accurate results because, as I showed few sections before, we have far far more data from Europe/America than from other continents. So there can be huge innaccuracy.
+There we will not get accurate results because, as I showed few sections before, we have far far more data from Europe/America than from other continents. So there can be huge **innaccuracy**.
+
+```{r message = FALSE, warning = FALSE}
+
+#same as in previous for global age
+suicide_data_continent = data %>%
+  group_by(year, continent) %>%
+  summarize(suicide_100k = (sum(suicides_no) / sum(population)) * 100000)
+  
+  
+ggplot(data = suicide_data_continent, 
+       aes(x = year, y = suicide_100k, col = factor(continent))) + 
+  facet_grid(continent ~ ., scales = "free_y") + 
+
+  geom_line() + 
+  geom_point() +
+  
+  #change labels
+  xlab('Year') +
+  ylab('Suicides global per 100k')+
+  
+  #change legend -> from factor(sex) to sex
+  labs(color = 'Continent')
+
+```
+
+**Europe** has the most of suicides per 100k, but we see that this trend is **decreasing** over time. However in **America** it does do opposite - **increases**. **Asia oscilates** and is in middle - between America and Europe.
+Oceania and Africa is not worth commenting, because we dont have enough data, in my opinion.
 
 #### Age
-In plot few sections before we saw that this variable is equal among all categories so the results will be accurate too.
+In plot few sections before we saw that this variable is **equal among all categories** so the results will be accurate too.
+
+```{r message = FALSE, warning = FALSE}
+#same as in previous for global age
+suicide_data_age = data %>%
+  group_by(year, age) %>%
+  summarize(suicide_100k = (sum(suicides_no) / sum(population)) * 100000)
+  
+ggplot(data = suicide_data_age, 
+       aes(x = year, y = suicide_100k, col = factor(age))) + 
+  facet_grid(age ~ ., scales = "free_y") + 
+  
+  geom_line() + 
+  geom_point() +
+  
+  #change labels
+  xlab('Year') +
+  ylab('Suicides global per 100k')+
+  
+  #change legend -> from factor(age) to age
+  labs(color = 'Age')
+
+
+```
+
+We can see that almost in all age categories the trend is decreasing over time. Also it is obvious, that most of suicides are commited by older people. We can really say: **The older you are, the higher chance of commiting suicide you have.**
+
+## Part 2
+In this part we will have a look on:
+The outcome of the previous step should be a set of
+candidate hypotheses about suicide patterns. In this task you are supposed to formally test them. An example hypothesis could be: Hnull: the overall
+suicide rate across continents does not change, Ha: there is at least a pair of
+continents whose overall suicide rates differ. You are supposed to propose and
+test at least 3 hypotheses.
+
+## Part 3
+
+## Discussion
+#![Thanks for the attention :) ](finished.PNG)

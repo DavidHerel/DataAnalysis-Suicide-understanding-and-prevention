@@ -18,12 +18,10 @@ knitr::opts_chunk$set(echo = TRUE)
  
 ## Introduction
 
-In this notebook I want to make a closer look on Suicide dataset and analyze it.
+In this notebook I want to make a closer look on Suicide dataset, analyze it and make some predictive models.
 
 ## Part I - Exploratory analysis of the suicide dataset
-Load the dataset, visualize the main relationships and trends, 
-preprocess the data, carry out dimensionality reduction and clustering. The main goal is to see whether there are
-regularities in suicide rates across countries, continents, periods of times, etc.
+In this part I will load the dataset and visualize the main relationships and trends, 
 
 ### Analyze variables
 So what about to start with analyzing dataset?
@@ -73,10 +71,11 @@ So when we switch to continents. We can see most data comes from **Europe and Am
 So it is possible that the models and prediction will be more accurate for **them** and not so good for **other continents** like Africa or Oceania.
 
 ### Analyze correlations
-Now we analyzed key variables and it is time to move on some **'high-level'** charts like interesting corelations.
+Now we analyzed key variables and it is time to move on some **'high-level'** charts like interesting correlations.
 
 #### Suicide ratio
 What about overall **suicide rate**? Is it increasing, decreasing or stagnating?
+
 ```{r message = FALSE, warning = FALSE}
 #libraries
 library(magrittr) 
@@ -109,7 +108,7 @@ And this greatly shows how statistics **can be wrong**, because our world is too
 
 If we see this **model**. Everyone would predict that in couple of years the suicide rate will be even lower. But **COVID-19** hit. And we can see that suicides are massively increasing [^1] [^2]. 
 
-To have a **correct** prediction we would have to develop model which can predict, when war **strikes or pandemic strikes** etc. And that is impossible in **near future**, in my opinion. 
+To have a **correct** prediction we would have to develop model which can predict, when war **strikes or pandemic strikes** etc. And that is impossible in **near future**, in my opinion.
 
 
 [^1]: Gunnell D, Appleby L, Arensman E, et al., COVID-19 Suicide Prevention Research Collaboration. Suicide risk and prevention during the COVID-19 pandemic. Lancet Psychiatry2020;7:468-71. doi:10.1016/S2215-0366(20)30171-1 pmid:32330430
@@ -175,10 +174,12 @@ ggplot(data = suicide_data_continent,
 ```
 
 **Europe** has the most of suicides per 100k, but we see that this trend is **decreasing** over time. However in **America** it does do opposite - **increases**. **Asia oscilates** and is in middle - between America and Europe.
+
 Oceania and Africa is not worth commenting, because we dont have enough data, in my opinion.
 
 #### Age
-In plot few sections before we saw that this variable is **equal among all categories** so the results will be accurate too.
+
+In plot, few sections before, we saw that this variable is **equal among all categories** so the results will be accurate too.
 
 ```{r message = FALSE, warning = FALSE}
 #same as in previous for global age
@@ -203,18 +204,24 @@ ggplot(data = suicide_data_age,
 
 ```
 
-We can see that almost in all age categories the trend is decreasing over time. Also it is obvious, that most of suicides are commited by older people. We can really say: **The older you are, the higher chance of commiting suicide you have.**
+We can see that almost in all age categories the trend is decreasing over time. Also it is obvious, that most of suicides are committed by older people. 
+
+We can really say: **The older you are, the higher chance of commiting suicide you have.**
 
 ### Discussion
 
 Key takeaways are that:
-bla bla
-
+- Male have 2 times more chance to commit suicide than female.
+- Europe has the most suicides per 100k people, but trend is decreasing. In USA it does the opposite.
+- The older you are, the higher chance of committing suicide you have
+- Overall suicide rate is decreasing (1986-2015)
 
 ## Part 2
 From part 1, we have really interesting hypotheses. In this part we will test some of those.
 
 ### Age differences
+In graph before we see that age affect suicide ratio. So we will test this hypothesis.
+
 Does the categorical independent variable **age** affect the dependent variable **suicide rates**? In other words we test if the mean in all age groups is the same or not.
 
 H0: The **mean** value of the groups is the same 
@@ -224,6 +231,7 @@ H1: The **mean** value of the groups is not the same
 #### ANOVA
 
 We can use ANOVA method to test it. More explicitly one-way ANOVA.
+
 ```{r message = FALSE, warning = FALSE}
 anova_age = aov(suicide_data_age$suicide_100k~suicide_data_age$age)
 summary(anova_age)
@@ -404,16 +412,10 @@ The p-value is below 0.05 so we can safely reject H0.
 Now we are confirmed that: **Mean value of the groups is not the same - so continent affect suicide rate**. 
 
 ## Part 3
-Suicide predictive model. Create a model that predicts the suicide rate
-based on the remaining variables. Propose a meaningful train/test scenario.
-Evaluate and compare the performance of the models, employ cross-validation
-to get an unbiased estimate. Utilize feature selection to simplify the models
-and improve their performance. Use at least one method that we touched in
-the course, but you can compare with other methods too (neural networks,
-gradient boosting trees, etc.).
-
 In this part I will create model that will predict the suicide rate based on the remaining variables.
 
+We will use learnAndTest function from hw01. Where the X input is matrix of independent variables and Y input is matrix of dependent variable. 
+This function also employs cross-validation.
 ```{r}
 library(caret)
 
@@ -434,6 +436,7 @@ learnAndTest <- function(X, Y, modelType, ...) {
 }
 ```
 
+### Linear regression
 
 ```{r message = FALSE, warning = FALSE}
 library(dplyr)
@@ -443,10 +446,9 @@ independend_matrix <- select(data, country, year, sex, age, population, gdp_for_
 print(learnAndTest(independend_matrix, dependend_matrix, "lm"))
 
 ```
-We can see that our model can explain more than 55% of suicides. However RMSE is around 600 so we did not fit the data perfectly (0 would be the desired value).
+We can see that our model can explain more than **55%** of suicides. However **RMSE** is around 600 so we did not fit the data perfectly (0 would be the desired value).
 
-We can now compare linear reggression with other method like Neural network, polynomial regression or logistic regression.
-Unfortunately, my computer can not handle Polynomial reggresion, I get erro
+We can now compare linear regression with other method like **Logistic regression**.
 
 ```{r message = FALSE, warning = FALSE}
 library(dplyr)
@@ -458,13 +460,29 @@ independend_matrix <- select(data, country, year, sex, age, population, gdp_for_
 #Polynomial regression
 #print(learnAndTest(independend_matrix, dependend_matrix, "krlsPoly"))
 
-#Logistic regression
-#print(learnAndTest(independend_matrix, dependend_matrix, "logreg"))
-
 #Neural network model
-print(learnAndTest(independend_matrix, dependend_matrix, "brnn"))
+#print(learnAndTest(independend_matrix, dependend_matrix, "brnn"))
+
+# Polynomial model
+#print(learnAndTest(independend_matrix, dependend_matrix, "krlsPoly"))
 
 ```
 
 ## Discussion
+Assignment was **great**! For me it was the most interesting topic and I enjoyed analyzing this dataset.
+But what I am curious about is to predict **future suicides**. 
+
+Which due to **coronavirus**, we can see that it is nearly impossible to predict its occurrence from past data. Because the world is too complex and we can not even successfully predict population rate, because pandemic, war, meteoric or **anything** could happen. We can just say that with xy% we are sure that population will increase etc..
+
+I was thinking about it for a while. How we could achieve this model which predict future? If the universe is deterministic, if we knew positions of all atoms in the universe and apply function on them we could see what will happen next. But it is impossible to know position of all atoms now. Ok, I get too deep in my thoughts haha, but I think we are making great progress in prediction, just look at huge succes with AlphaFold :)
+
+Now we can compare our results with **WHO** results. We can see that we have same results in suicide ratio, which is decreasing in their's dataset too. Also male/female and age statistics is **same too.** 
+
+Unfortunately their summary is more about prevention and for example says that for every **successful** suicide there is **20 unsuccessful**. And also that for people, that are **15-29 years old** it is the second leading cause of death. These trends we can not observe in our dataset :(
+
+However we still got interesting results from our work. Future work could be to test more complicated hypothesis.
+
+Thanks for the attention :)
+
+
 #![Thanks for the attention :) ](finished.PNG)

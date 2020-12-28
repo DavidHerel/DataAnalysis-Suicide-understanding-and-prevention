@@ -205,15 +205,266 @@ ggplot(data = suicide_data_age,
 
 We can see that almost in all age categories the trend is decreasing over time. Also it is obvious, that most of suicides are commited by older people. We can really say: **The older you are, the higher chance of commiting suicide you have.**
 
+### Discussion
+
+Key takeaways are that:
+bla bla
+
+
 ## Part 2
-In this part we will have a look on:
-The outcome of the previous step should be a set of
-candidate hypotheses about suicide patterns. In this task you are supposed to formally test them. An example hypothesis could be: Hnull: the overall
-suicide rate across continents does not change, Ha: there is at least a pair of
-continents whose overall suicide rates differ. You are supposed to propose and
-test at least 3 hypotheses.
+From part 1, we have really interesting hypotheses. In this part we will test some of those.
+
+### Age differences
+Does the categorical independent variable **age** affect the dependent variable **suicide rates**? In other words we test if the mean in all age groups is the same or not.
+
+H0: The **mean** value of the groups is the same 
+
+H1: The **mean** value of the groups is not the same
+
+#### ANOVA
+
+We can use ANOVA method to test it. More explicitly one-way ANOVA.
+```{r message = FALSE, warning = FALSE}
+anova_age = aov(suicide_data_age$suicide_100k~suicide_data_age$age)
+summary(anova_age)
+summary(anova_age)[[1]][["Pr(>F)"]][1]
+```
+We see really low p-value(far below 0.05). So we reject H0 hypothesis. So **we see that age really affects suicide rates**.
+
+But we have to check our assumptions, because if they are not fulfilled we can't use this result.
+
+#### Shapiro-wilk test
+
+First assumption:
+
+**Does residuals in each group follow a normal distribution?**
+
+We will check this by using Shapiro-Wilk test.
+
+```{r message = FALSE, warning = FALSE}
+age_residuals = residuals(object = anova_age)
+shapiro.test(age_residuals)
+```
+Unfortunately, p-value is bellow 0.05 so we have to reject that residuals have normal distribution.
+
+#### Levene's test
+
+**Is variance same in all groups?**
+
+We will check this by using Levene's test.
+```{r message = FALSE, warning = FALSE}
+library(car)
+leveneTest(suicide_data_age$suicide_100k~suicide_data_age$age)
+```
+Again, p-value is under 0.05 so we have to reject H0. That means that variance is **NOT** same in all groups.
+
+Not a single assumption is fulfilled so ANOVA did not gave us correct results.
+
+But, if ANOVA assumption fails. We can use non-parametric tests. For example: **Kruskal-Wallis test**.
+
+#### Kruskal-wallis test
+
+```{r message = FALSE, warning = FALSE}
+library(car)
+kruskal.test(suicide_data_age$suicide_100k~suicide_data_age$age)
+```
+The p-value is below 0.05 so H0 is rejected. 
+
+Now we can safely say that: **Mean value of the groups is not the same - so age affect suicide rate**. 
+
+### Sex differences
+
+Does the categorical independent variable **sex** affect the dependent variable **suicide rates**? In other words we test if the mean in two sex groups is the same or not.
+
+H0: The **mean** value of the groups is the same 
+
+H1: The **mean** value of the groups is not the same
+
+As in first hypothesis, we can use ANOVA method to test it. More explicitly **one-way ANOVA**.
+
+#### ANOVA
+
+```{r message = FALSE, warning = FALSE}
+anova_sex = aov(suicide_data_sex$suicide_100k~suicide_data_sex$sex)
+summary(anova_sex)
+summary(anova_sex)[[1]][["Pr(>F)"]][1]
+```
+P-value is again under 0.05. We can safely reject H0 hypothesis. 
+
+So **we see that sex really affects suicide rates**.
+
+What about assumptions? We check them as in hypothesis above.
+
+First assumption:
+
+**Does residuals in each group follow a normal distribution?**
+
+We will check this by using Shapiro-Wilk test.
+
+#### Shapiro-wilk test
+
+```{r message = FALSE, warning = FALSE}
+sex_residuals = residuals(object = anova_sex)
+shapiro.test(sex_residuals)
+```
+Finally, the p-value is higher than 0.05 :)
+
+We will not reject H0 - so **residuals have normal distribution**.
+
+**Is variance same in all groups?**
+
+We will check this by using Levene's test.
+
+#### Levene's test
+
+```{r message = FALSE, warning = FALSE}
+library(car)
+leveneTest(suicide_data_sex$suicide_100k~suicide_data_sex$sex)
+```
+Unfortunately, p-value is under 0.05 so we have to reject H0. That means that variance is **NOT** same in all groups.
+
+Even thought, only this assumption is violated. We still can not rely on ANOVA results. 
+
+We are again forced to use **Kruskal-Wallis test**.
+
+#### Kruskal-wallis test
+
+```{r message = FALSE, warning = FALSE}
+library(car)
+kruskal.test(suicide_data_sex$suicide_100k~suicide_data_sex$sex)
+```
+The p-value is below 0.05 so we can safely reject H0. 
+
+Now we are confirmed that: **Mean value of the groups is not the same - so sex affect suicide rate**. 
+
+
+### Continent differences
+
+Does the categorical independent variable **continent** affect the dependent variable **suicide rates**? In other words we test if the mean in continent groups is the same or not.
+
+H0: The **mean** value of the groups is the same 
+
+H1: The **mean** value of the groups is not the same
+
+As in above hypothesis, we can use **one-way ANOVA method** to test it.
+
+#### ANOVA
+
+```{r message = FALSE, warning = FALSE}
+anova_continent = aov(suicide_data_continent$suicide_100k~suicide_data_continent$continent)
+summary(anova_continent)
+summary(anova_continent)[[1]][["Pr(>F)"]][1]
+```
+P-value is again under 0.05. We can safely reject H0 hypothesis. 
+
+So **we see that continent really affects suicide rates**.
+
+What about assumptions? We check them as in hypothesis above.
+
+First assumption:
+
+**Does residuals in each group follow a normal distribution?**
+
+We will check this by using Shapiro-Wilk test.
+
+#### Shapiro-wilk test
+
+```{r message = FALSE, warning = FALSE}
+continent_residuals = residuals(object = anova_continent)
+shapiro.test(continent_residuals)
+```
+Sadly p-value is a lot lower than 0.05 :(
+
+We will reject H0 - so **residuals dont have normal distribution**.
+
+**Is variance same in all groups?**
+
+We will check this by using Levene's test.
+
+#### Levene's test
+
+```{r message = FALSE, warning = FALSE}
+library(car)
+leveneTest(suicide_data_continent$suicide_100k~suicide_data_continent$continent)
+```
+Unfortunately, p-value is under 0.05 so we have to reject H0. That means that variance is **NOT** same in all groups.
+
+All assumptions are again violated. We can not rely on ANOVA results. 
+
+We are again forced to use **Kruskal-Wallis test**.
+
+#### Kruskal-wallis test
+
+```{r message = FALSE, warning = FALSE}
+library(car)
+kruskal.test(suicide_data_continent$suicide_100k~suicide_data_continent$continent)
+```
+The p-value is below 0.05 so we can safely reject H0. 
+
+Now we are confirmed that: **Mean value of the groups is not the same - so continent affect suicide rate**. 
 
 ## Part 3
+Suicide predictive model. Create a model that predicts the suicide rate
+based on the remaining variables. Propose a meaningful train/test scenario.
+Evaluate and compare the performance of the models, employ cross-validation
+to get an unbiased estimate. Utilize feature selection to simplify the models
+and improve their performance. Use at least one method that we touched in
+the course, but you can compare with other methods too (neural networks,
+gradient boosting trees, etc.).
+
+In this part I will create model that will predict the suicide rate based on the remaining variables.
+
+```{r}
+library(caret)
+
+learnAndTest <- function(X, Y, modelType, ...) {
+  data <- data.frame(X, Y)
+   
+  train.control <- trainControl(method = "cv", number = 10) # 10-fold cross-validataion
+  # Alternative to get more accurate, but slower evaluation:
+  # train.control <- trainControl(method = "LOOCV")
+ 
+  # Here we train the model using the versatile `train` function from the caret package
+  train(Y ~.,
+                 data = data,
+                 method = modelType,
+                 trControl = train.control,
+                 ...)
+   
+}
+```
+
+
+```{r message = FALSE, warning = FALSE}
+library(dplyr)
+dependend_matrix <- data$suicides_no
+independend_matrix <- select(data, country, year, sex, age, population, gdp_for_year, gdp_per_capita, generation, continent)
+
+print(learnAndTest(independend_matrix, dependend_matrix, "lm"))
+
+```
+We can see that our model can explain more than 55% of suicides. However RMSE is around 600 so we did not fit the data perfectly (0 would be the desired value).
+
+We can now compare linear reggression with other method like Neural network, polynomial regression or logistic regression.
+Unfortunately, my computer can not handle Polynomial reggresion, I get erro
+
+```{r message = FALSE, warning = FALSE}
+library(dplyr)
+library(caret)
+
+dependend_matrix <- data$suicides_no
+independend_matrix <- select(data, country, year, sex, age, population, gdp_for_year, gdp_per_capita, generation, continent)
+
+#Polynomial regression
+#print(learnAndTest(independend_matrix, dependend_matrix, "krlsPoly"))
+
+#Logistic regression
+#print(learnAndTest(independend_matrix, dependend_matrix, "logreg"))
+
+#Neural network model
+print(learnAndTest(independend_matrix, dependend_matrix, "brnn"))
+
+```
 
 ## Discussion
 #![Thanks for the attention :) ](finished.PNG)
